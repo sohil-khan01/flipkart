@@ -22,11 +22,12 @@ const Home = () => {
 
     // Verify token with backend
     fetchUserData(token);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchUserData = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/users/me', {
+      const response = await axios.get(`/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
