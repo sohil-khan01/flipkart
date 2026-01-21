@@ -20,6 +20,7 @@ const Home = () => {
       const matchQuery = q ? p.title.toLowerCase().includes(q) : true;
       return matchCategory && matchQuery;
     });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(next);
   }, [category, products, searchParams]);
 

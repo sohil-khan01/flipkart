@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useMemo, useState } from 'react';
 import Layout from '../components/Layout';
 import { api } from '../utils/api';

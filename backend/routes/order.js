@@ -1,8 +1,8 @@
-import express from "express";
+import {Router} from "express";
 import { createOrder, deleteAllOrdersAdmin, getOrderByOrderId, listOrdersAdmin, trackOrdersByMobile } from "../controllers/order.js";
 import { adminProtect } from "../middleware/adminAuth.js";
 
-const router = express.Router();
+const router = Router();
 
 router.post("/", createOrder);
 router.get("/track", trackOrdersByMobile);
