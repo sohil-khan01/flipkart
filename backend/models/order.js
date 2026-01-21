@@ -1,0 +1,32 @@
+import mongoose from "mongoose";
+
+const orderItemSchema = new mongoose.Schema(
+  {
+    productId: { type: String, required: true },
+    title: { type: String, required: true },
+    image: { type: String, default: "" },
+    price: { type: Number, required: true },
+    qty: { type: Number, required: true },
+  },
+  { _id: false }
+);
+
+const orderSchema = new mongoose.Schema(
+  {
+    orderId: { type: String, required: true, unique: true },
+    deliveryDate: { type: Date, required: true },
+    customer: {
+      name: { type: String, required: true },
+      mobile: { type: String, required: true },
+      address: { type: String, required: true },
+    },
+    payment: { type: String, enum: ["cod", "upi"], required: true },
+    items: { type: [orderItemSchema], required: true },
+    subtotal: { type: Number, required: true },
+    delivery: { type: Number, required: true },
+    total: { type: Number, required: true },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Order", orderSchema);

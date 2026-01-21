@@ -1,99 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
+import Layout from '../components/Layout';
+import CategoryStrip from '../components/CategoryStrip';
+import HeroSlider from '../components/HeroSlider';
+import MidSection from '../components/MidSection';
+import ProductCard from '../components/ProductCard';
+import { useCatalog } from '../context/CatalogContext';
 
 const Home = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { products, loading } = useCatalog();
+  const [category, setCategory] = useState('');
+  const [visible, setVisible] = useState(products);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-
-    // Verify token with backend
-    fetchUserData(token);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
-
-  const fetchUserData = async (token) => {
-    try {
-      const response = await axios.get(`/api/users/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.success) {
-        setUser(response.data.data);
-        localStorage.setItem('user', JSON.stringify(response.data.data));
-      }
-    } catch (err) {
-      console.error('Failed to fetch user data:', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-2xl">Loading...</div>
-      </div>
-    );
-  }
+    const q = (searchParams.get('q') || '').trim().toLowerCase();
+    const next = products.filter((p) => {
+      const matchCategory = category ? p.category === category : true;
+      const matchQuery = q ? p.title.toLowerCase().includes(q) : true;
+      return matchCategory && matchQuery;
+    });
+    setVisible(next);
+  }, [category, products, searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">Flipkart</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-700">Welcome, <strong>{user?.name}</strong></span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-            >
-              Logout
-            </button>
+    <Layout>
+      <CategoryStrip activeCategory={category} onSelectCategory={setCategory} />
+      <HeroSlider />
+      <section className="bg-[#f1f3f6]">
+        <div className="mx-auto max-w-[1320px] px-3 py-4 sm:px-4">
+          <div className="rounded-md bg-white p-4 shadow-sm">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <div className="text-base font-bold text-slate-900">Top Deals For You</div>
+                <div className="text-xs text-slate-500">Products are loaded from database (admin added)</div>
+              </div>
+
+              {category ? (
+                <button
+                  type="button"
+                  onClick={() => setCategory('')}
+                  className="self-start rounded-sm border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:self-auto"
+                >
+                  Clear Category
+                </button>
+              ) : null}
+            </div>
+
+            {loading ? (
+              <div className="mt-6 rounded bg-slate-50 p-6 text-center text-sm text-slate-600">
+                Loading products…
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {visible.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            )}
+
+            {visible.length === 0 ? (
+              <div className="mt-8 rounded bg-slate-50 p-6 text-center text-sm text-slate-600">
+                No products found. Add products from the Admin panel.
+              </div>
+            ) : null}
           </div>
         </div>
-      </nav>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Welcome to Flipkart</h2>
-          <p className="text-gray-600 text-lg mb-4">
-            You are successfully logged in!
-          </p>
-
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Profile</h3>
-            <p className="text-gray-700"><strong>Name:</strong> {user?.name}</p>
-            <p className="text-gray-700"><strong>Email:</strong> {user?.email}</p>
-            <p className="text-gray-700"><strong>Role:</strong> {user?.role || 'User'}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+      <MidSection />
+    </Layout>
   );
 };
 

@@ -1,0 +1,16 @@
+{
+  "name": "Flipkart Style Store",
+  "short_name": "Store",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f3f6",
+  "theme_color": "#2874f0",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
