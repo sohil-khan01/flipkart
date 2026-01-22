@@ -6,7 +6,6 @@ import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import connectDB from "./utils/db.js";
 import { notFound, errorHandler } from "./middleware/error.js";
-import userRoutes from "./routes/user.js";
 import adminRoutes from "./routes/admin.js";
 import productRoutes from "./routes/product.js";
 import orderRoutes from "./routes/order.js";
@@ -24,6 +23,11 @@ function slugify(value) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function makeSku(seed) {
+  const base = slugify(seed) || "sku";
+  return `${base}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
 async function seedProductsIfEmpty() {
@@ -54,6 +58,7 @@ async function seedProductsIfEmpty() {
 
       return {
         title: p.title,
+        sku: makeSku(p.slug || p.title),
         slug,
         category: p.category,
         price: p.price,
@@ -77,7 +82,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Body parser
-app.use(express.json({ limit: "15mb" }));
+app.use(express.json({ limit: "2mb" }));
 
 // CORS
 app.use(cors());
@@ -86,7 +91,6 @@ app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);

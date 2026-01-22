@@ -14,6 +14,7 @@ const generateToken = (id) => {
 // @access Public
 export const register = async (req, res, next) => {
   try {
+    return res.status(410).json({ success: false, message: "User registration is disabled" });
     const { name, email, password, confirmPassword } = req.body;
 
     // Validate input
@@ -71,6 +72,7 @@ export const register = async (req, res, next) => {
 // @access Public
 export const login = async (req, res, next) => {
   try {
+    return res.status(410).json({ success: false, message: "User login is disabled" });
     const { email, password } = req.body;
 
     // Validate input
@@ -113,6 +115,7 @@ export const login = async (req, res, next) => {
 // @access Private
 export const getMe = async (req, res, next) => {
   try {
+    return res.status(410).json({ success: false, message: "User profile is disabled" });
     const user = await User.findById(req.user.id);
 
     res.status(200).json({

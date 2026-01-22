@@ -2,7 +2,9 @@ import Order from "../models/order.js";
 import asyncHandler from "express-async-handler";
 
 function makeOrderId() {
-  return `ORD-${Date.now().toString(36).toUpperCase()}`;
+  const ts = Date.now().toString(36).toUpperCase();
+  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `ORD-${ts}-${rnd}`;
 }
 
 function computeDeliveryDate(seed) {
@@ -77,10 +79,7 @@ export const trackOrdersByMobile = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "Valid 10-digit mobile number is required" });
   }
 
-  const mobileRegex = new RegExp(`${mobile}\\D*$`);
-  const orders = await Order.find({
-    $or: [{ "customer.mobile": mobile }, { "customer.mobile": { $regex: mobileRegex } }],
-  }).sort({ createdAt: -1 });
+  const orders = await Order.find({ "customer.mobile": mobile }).sort({ createdAt: -1 });
 
   const sanitized = orders.map((o) => ({
     orderId: o.orderId,
