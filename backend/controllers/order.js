@@ -32,7 +32,10 @@ export const createOrder = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "Order items are required" });
   }
 
-  const payment = body.payment === "upi" ? "upi" : "cod";
+  const payment = "upi";
+  const paymentRef = String(body.paymentRef || "").trim();
+  const status = "pending";
+
   const orderId = makeOrderId();
   const deliveryDate = computeDeliveryDate(orderId);
 
@@ -49,6 +52,8 @@ export const createOrder = asyncHandler(async (req, res) => {
       address: String(body.customer.address || "").trim(),
     },
     payment,
+    paymentRef,
+    status,
     items: body.items.map((it) => ({
       productId: String(it.productId),
       title: String(it.title),
@@ -85,6 +90,7 @@ export const trackOrdersByMobile = asyncHandler(async (req, res) => {
     orderId: o.orderId,
     createdAt: o.createdAt,
     deliveryDate: o.deliveryDate,
+    status: o.status,
     items: Array.isArray(o.items)
       ? o.items.map((it) => ({
           productId: it.productId,
@@ -103,6 +109,26 @@ export const trackOrdersByMobile = asyncHandler(async (req, res) => {
 export const listOrdersAdmin = asyncHandler(async (req, res) => {
   const orders = await Order.find({}).sort({ createdAt: -1 });
   return res.status(200).json({ success: true, data: orders });
+});
+
+export const confirmOrderAdmin = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const order = await Order.findOne({ orderId: String(orderId) });
+  if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+  order.status = "confirmed";
+  await order.save();
+  return res.status(200).json({ success: true, data: order });
+});
+
+export const rejectOrderAdmin = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const order = await Order.findOne({ orderId: String(orderId) });
+  if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+  order.status = "rejected";
+  await order.save();
+  return res.status(200).json({ success: true, data: order });
 });
 
 export const deleteAllOrdersAdmin = asyncHandler(async (req, res) => {

@@ -10,6 +10,7 @@ function Pill({ children, tone = 'slate' }) {
     blue: 'bg-[#2874f0]/10 text-[#2874f0]',
     green: 'bg-emerald-100 text-emerald-700',
     orange: 'bg-orange-100 text-orange-700',
+    red: 'bg-red-100 text-red-700',
   };
   return (
     <span className={`inline-flex items-center rounded px-2 py-1 text-xs font-bold ${tones[tone] || tones.slate}`}>
@@ -51,6 +52,8 @@ export default function AdminOrders() {
           createdAt: o.createdAt || o.updatedAt,
           customer: o.customer,
           payment: o.payment,
+          status: o.status,
+          paymentRef: o.paymentRef,
           items: o.items,
           subtotal: o.subtotal,
           delivery: o.delivery,
@@ -128,6 +131,7 @@ export default function AdminOrders() {
                 <th className="px-3 py-3">Order</th>
                 <th className="px-3 py-3">Customer</th>
                 <th className="px-3 py-3">Payment</th>
+                <th className="px-3 py-3">Status</th>
                 <th className="px-3 py-3">Amount</th>
                 <th className="px-3 py-3">Placed</th>
                 <th className="px-3 py-3">Action</th>
@@ -148,7 +152,12 @@ export default function AdminOrders() {
                         <div className="text-xs text-slate-500">{o.customer?.mobile}</div>
                       </td>
                       <td className="px-3 py-3">
-                        <Pill tone={o.payment === 'cod' ? 'orange' : 'green'}>{o.payment === 'cod' ? 'COD' : 'UPI'}</Pill>
+                        <Pill tone="green">UPI</Pill>
+                      </td>
+                      <td className="px-3 py-3">
+                        <Pill tone={o.status === 'pending' ? 'orange' : o.status === 'rejected' ? 'red' : 'green'}>
+                          {o.status === 'pending' ? 'Pending' : o.status === 'rejected' ? 'Rejected' : 'Confirmed'}
+                        </Pill>
                       </td>
                       <td className="px-3 py-3 font-bold text-slate-900">{formatINR(o.total)}</td>
                       <td className="px-3 py-3 text-slate-700">{formatDate(o.createdAt)}</td>
@@ -165,11 +174,59 @@ export default function AdminOrders() {
 
                     {isOpen ? (
                       <tr className="border-b">
-                        <td colSpan={6} className="px-3 py-4">
+                        <td colSpan={7} className="px-3 py-4">
                           <div className="grid gap-4 lg:grid-cols-2">
                             <div>
                               <div className="text-xs font-bold text-slate-600">Address</div>
                               <div className="mt-1 rounded bg-slate-50 p-3 text-sm text-slate-700">{o.customer?.address}</div>
+
+                              {o.paymentRef ? (
+                                <div className="mt-3">
+                                  <div className="text-xs font-bold text-slate-600">UTR</div>
+                                  <div className="mt-1 rounded bg-slate-50 p-3 text-sm font-semibold text-slate-900">{o.paymentRef}</div>
+                                </div>
+                              ) : null}
+
+                              {o.status === 'pending' ? (
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      try {
+                                        await api.patch(`/api/orders/admin/${encodeURIComponent(o.orderId)}/confirm`, null, {
+                                          headers: authHeaders(token),
+                                        });
+                                        setRefreshKey((k) => k + 1);
+                                      } catch (err) {
+                                        const status = err?.response?.status;
+                                        setError(err?.response?.data?.message || err?.message || 'Failed to confirm order');
+                                        if (status === 401 || status === 403) logout();
+                                      }
+                                    }}
+                                    className="inline-flex rounded-sm bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"
+                                  >
+                                    Confirm Payment
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      try {
+                                        await api.patch(`/api/orders/admin/${encodeURIComponent(o.orderId)}/reject`, null, {
+                                          headers: authHeaders(token),
+                                        });
+                                        setRefreshKey((k) => k + 1);
+                                      } catch (err) {
+                                        const status = err?.response?.status;
+                                        setError(err?.response?.data?.message || err?.message || 'Failed to reject order');
+                                        if (status === 401 || status === 403) logout();
+                                      }
+                                    }}
+                                    className="inline-flex rounded-sm bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700"
+                                  >
+                                    Reject Payment
+                                  </button>
+                                </div>
+                              ) : null}
                             </div>
                             <div>
                               <div className="text-xs font-bold text-slate-600">Items</div>

@@ -3,6 +3,20 @@ import Layout from '../components/Layout';
 import { api } from '../utils/api';
 import { formatINR } from '../data/products';
 
+function Pill({ children, tone = 'slate' }) {
+  const tones = {
+    slate: 'bg-slate-100 text-slate-700',
+    green: 'bg-emerald-100 text-emerald-700',
+    orange: 'bg-orange-100 text-orange-700',
+    red: 'bg-red-100 text-red-700',
+  };
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-1 text-xs font-bold ${tones[tone] || tones.slate}`}>
+      {children}
+    </span>
+  );
+}
+
 function toDateStr(value) {
   if (!value) return '';
   const d = new Date(value);
@@ -174,6 +188,9 @@ export default function TrackOrder() {
                     const steps = computeTimeline(o.createdAt, o.deliveryDate);
                     const deliveryStr = toDateStr(o.deliveryDate);
                     const itemCount = Array.isArray(o.items) ? o.items.reduce((s, it) => s + Number(it.qty || 0), 0) : 0;
+                    const status = String(o.status || '');
+                    const statusTone = status === 'pending' ? 'orange' : status === 'rejected' ? 'red' : status ? 'green' : 'slate';
+                    const statusLabel = status === 'pending' ? 'Pending' : status === 'rejected' ? 'Rejected' : status === 'confirmed' ? 'Confirmed' : '';
 
                     return (
                       <div key={o.orderId} className="rounded border border-slate-200 bg-white p-4">
@@ -184,6 +201,16 @@ export default function TrackOrder() {
                             <div className="mt-1 text-xs text-slate-600">
                               {itemCount} item{itemCount === 1 ? '' : 's'} • Total {formatINR(Number(o.total || 0))}
                             </div>
+                            {statusLabel ? (
+                              <div className="mt-2">
+                                <Pill tone={statusTone}>{statusLabel}</Pill>
+                              </div>
+                            ) : null}
+                            {status === 'rejected' ? (
+                              <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                                Payment rejected. Please try again.
+                              </div>
+                            ) : null}
                           </div>
                           {deliveryStr ? (
                             <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">

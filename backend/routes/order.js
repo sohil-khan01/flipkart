@@ -1,5 +1,13 @@
 import express from "express";
-import { createOrder, deleteAllOrdersAdmin, getOrderByOrderId, listOrdersAdmin, trackOrdersByMobile } from "../controllers/order.js";
+import {
+  confirmOrderAdmin,
+  rejectOrderAdmin,
+  createOrder,
+  deleteAllOrdersAdmin,
+  getOrderByOrderId,
+  listOrdersAdmin,
+  trackOrdersByMobile,
+} from "../controllers/order.js";
 import { adminProtect } from "../middleware/adminAuth.js";
 
 const router = express.Router();
@@ -32,6 +40,8 @@ function rateLimitOrders(req, res, next) {
 router.post("/", rateLimitOrders, createOrder);
 router.get("/track", trackOrdersByMobile);
 router.get("/admin", adminProtect, listOrdersAdmin);
+router.patch("/admin/:orderId/confirm", adminProtect, confirmOrderAdmin);
+router.patch("/admin/:orderId/reject", adminProtect, rejectOrderAdmin);
 router.delete("/admin", adminProtect, deleteAllOrdersAdmin);
 router.get("/:orderId", getOrderByOrderId);
 
