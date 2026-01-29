@@ -14,12 +14,6 @@ export default function AdminProducts() {
   const [uploadError, setUploadError] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
 
-  const [importing, setImporting] = useState(false);
-  const [importError, setImportError] = useState('');
-  const [importSuccess, setImportSuccess] = useState('');
-  const [importJsonFile, setImportJsonFile] = useState(null);
-  const [importImageFiles, setImportImageFiles] = useState([]);
-
   const [form, setForm] = useState({
     title: '',
     category: categories[0]?.id || 'mobiles',
@@ -64,120 +58,6 @@ export default function AdminProducts() {
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsText(file);
     });
-  };
-
-  const normalizeImportProduct = (p) => {
-    if (!p || typeof p !== 'object') return null;
-    return {
-      title: String(p.title || '').trim(),
-      category: String(p.category || '').trim(),
-      price: Number(p.price || 0),
-      mrp: Number(p.mrp || 0),
-      discountPercent: Number(p.discountPercent || 0),
-      rating: p.rating == null ? 4.0 : Number(p.rating),
-      ratingCount: p.ratingCount == null ? 0 : Number(p.ratingCount),
-      images: Array.isArray(p.images) ? p.images.filter(Boolean) : [],
-      highlights: Array.isArray(p.highlights)
-        ? p.highlights.filter(Boolean)
-        : typeof p.highlights === 'string'
-          ? parseLines(p.highlights)
-          : [],
-      offers: Array.isArray(p.offers)
-        ? p.offers.filter(Boolean)
-        : typeof p.offers === 'string'
-          ? parseLines(p.offers)
-          : [],
-      specs:
-        p.specs && typeof p.specs === 'object'
-          ? p.specs
-          : typeof p.specs === 'string'
-            ? parseSpecs(p.specs)
-            : {},
-    };
-  };
-
-  const onImportBulk = async () => {
-    setImportError('');
-    setImportSuccess('');
-
-    if (!importJsonFile) {
-      setImportError('Please select a JSON file to import.');
-      return;
-    }
-
-    setImporting(true);
-
-    try {
-      const raw = await readFileText(importJsonFile);
-      let parsed;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        setImportError('Invalid JSON file.');
-        return;
-      }
-
-      const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.products) ? parsed.products : null;
-      if (!Array.isArray(list) || list.length === 0) {
-        setImportError('JSON must be an array of products (or {"products": [...]})');
-        return;
-      }
-
-      let nameToUrl = {};
-      if (importImageFiles.length) {
-        const fd = new FormData();
-        for (const f of importImageFiles) fd.append('images', f);
-        const res = await api.post('/api/uploads/images', fd, {
-          headers: {
-            ...authHeaders(token),
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        const items = Array.isArray(res?.data?.data?.items) ? res.data.data.items : [];
-        nameToUrl = items.reduce((acc, it) => {
-          if (it?.originalName && it?.url) acc[it.originalName] = it.url;
-          return acc;
-        }, {});
-      }
-
-      const resolved = list
-        .map(normalizeImportProduct)
-        .filter(Boolean)
-        .map((p) => {
-          const images = (p.images || []).map((img) => {
-            if (typeof img !== 'string') return '';
-            const trimmed = img.trim();
-            if (!trimmed) return '';
-            if (trimmed.startsWith('/uploads/')) return trimmed;
-            if (nameToUrl[trimmed]) return nameToUrl[trimmed];
-            const justName = trimmed.split('/').pop();
-            if (justName && nameToUrl[justName]) return nameToUrl[justName];
-            return trimmed;
-          });
-          return { ...p, images: images.filter(Boolean) };
-        });
-
-      const invalid = resolved.find((p) => !p.title || !p.category || !Array.isArray(p.images) || p.images.length === 0);
-      if (invalid) {
-        setImportError('Each product must have title, category, and at least one image.');
-        return;
-      }
-
-      const createRes = await api.post('/api/products/bulk', { products: resolved }, { headers: authHeaders(token) });
-      const count = createRes?.data?.data?.count;
-      setImportSuccess(`Imported ${Number(count || resolved.length)} products successfully.`);
-      setImportJsonFile(null);
-      setImportImageFiles([]);
-      await refresh();
-    } catch (err) {
-      setImportError(err?.response?.data?.message || err?.message || 'Failed to import products');
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        logout();
-      }
-    } finally {
-      setImporting(false);
-    }
   };
 
   const preview = useMemo(() => {
@@ -299,55 +179,6 @@ export default function AdminProducts() {
       {success ? (
         <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</div>
       ) : null}
-
-      {importError ? (
-        <div className="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{importError}</div>
-      ) : null}
-      {importSuccess ? (
-        <div className="mt-3 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {importSuccess}
-        </div>
-      ) : null}
-
-      <div className="mt-4 rounded-md border border-slate-200 bg-white p-4">
-        <div className="text-sm font-bold text-slate-900">Bulk Import (JSON)</div>
-        <div className="mt-2 text-xs text-slate-600">
-          Upload a JSON file (array of products). For images, either put existing "/uploads/..." URLs in JSON OR provide image files here and
-          reference them by filename inside JSON (example: "iphone1.webp").
-        </div>
-
-        <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <div>
-            <label className="text-xs font-bold text-slate-600">Products JSON file</label>
-            <input
-              type="file"
-              accept="application/json,.json"
-              onChange={(e) => setImportJsonFile((e.target.files && e.target.files[0]) || null)}
-              className="mt-1 block w-full text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-600">Images (optional)</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => setImportImageFiles(Array.from(e.target.files || []))}
-              className="mt-1 block w-full text-sm"
-            />
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onImportBulk}
-          disabled={importing || loading || uploading}
-          className="mt-4 h-11 w-full rounded-sm bg-[#fb641b] px-4 text-sm font-bold text-white hover:bg-[#ff6f2d] disabled:opacity-50"
-        >
-          {importing ? 'Importing…' : 'Import Products'}
-        </button>
-      </div>
 
       <div className={(error || success) ? 'mt-4 grid gap-4 lg:grid-cols-[1fr_360px]' : 'grid gap-4 lg:grid-cols-[1fr_360px]'}>
         <form onSubmit={onSubmit} className="grid gap-3">

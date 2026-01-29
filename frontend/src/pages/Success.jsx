@@ -89,6 +89,7 @@ export default function Success() {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [createdAt, setCreatedAt] = useState('');
   const [items, setItems] = useState([]);
+  const [status, setStatus] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -106,11 +107,13 @@ export default function Success() {
         }
         setCreatedAt(data?.createdAt || '');
         setItems(Array.isArray(data?.items) ? data.items : []);
+        setStatus(String(data?.status || ''));
       } catch {
         if (active) {
           setDeliveryDate('');
           setCreatedAt('');
           setItems([]);
+          setStatus('');
         }
       }
     }
@@ -142,6 +145,16 @@ export default function Success() {
                   <div>
                     <div className="text-base font-semibold text-emerald-800">Order placed successfully</div>
                     <div className="text-xs text-emerald-700">We have received your order and will start processing it soon.</div>
+                    {status === 'pending' ? (
+                      <div className="mt-2 text-sm font-semibold text-orange-700">
+                        Payment successful. Your order is under verification.
+                      </div>
+                    ) : null}
+                    {status === 'rejected' ? (
+                      <div className="mt-2 text-sm font-semibold text-red-700">
+                        Payment rejected. Please try again.
+                      </div>
+                    ) : null}
                     {deliveryDate ? (
                       <div className="mt-2 text-sm font-semibold text-emerald-800">Delivery by {deliveryDate}</div>
                     ) : null}

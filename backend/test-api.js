@@ -3,37 +3,12 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/users';
+const API_URL = 'http://localhost:5000/api/admin';
 
-async function testRegister() {
+async function testAdminLogin(pin) {
   try {
-    console.log('Testing Register endpoint...');
-    const response = await axios.post(`${API_URL}/register`, {
-      name: 'Test User',
-      email: `test${Date.now()}@example.com`,
-      password: 'password123',
-      confirmPassword: 'password123'
-    });
-    
-    console.log('✓ Register Success:', response.data);
-    return response.data.token;
-  } catch (error) {
-    console.error('✗ Register Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
-    throw error;
-  }
-}
-
-async function testLogin(email, password) {
-  try {
-    console.log('Testing Login endpoint...');
-    const response = await axios.post(`${API_URL}/login`, {
-      email,
-      password
-    });
+    console.log('Testing Admin Login endpoint...');
+    const response = await axios.post(`${API_URL}/login`, { pin });
     
     console.log('✓ Login Success:', response.data);
     return response.data.token;
@@ -47,9 +22,9 @@ async function testLogin(email, password) {
   }
 }
 
-async function testGetMe(token) {
+async function testAdminMe(token) {
   try {
-    console.log('Testing GetMe endpoint...');
+    console.log('Testing Admin Me endpoint...');
     const response = await axios.get(`${API_URL}/me`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -70,17 +45,12 @@ async function testGetMe(token) {
 async function runTests() {
   try {
     console.log('Starting API tests...\n');
-    
-    // Test register
-    const registerData = await testRegister();
+
+    // User APIs are disabled. Only admin PIN is supported.
+    const adminPin = process.env.ADMIN_PIN || '1234';
+    const token = await testAdminLogin(adminPin);
     console.log('\n');
-    
-    // Test login
-    await testLogin('test@example.com', 'password123');
-    console.log('\n');
-    
-    // Test getMe
-    // await testGetMe(registerData);
+    await testAdminMe(token);
     
     console.log('\n✓ All tests completed!');
   } catch (error) {

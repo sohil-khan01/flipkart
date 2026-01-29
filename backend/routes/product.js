@@ -1,7 +1,6 @@
 import {Router} from "express";
 import {
   createProduct,
-  createProductsBulk,
   deleteAllProductsAdmin,
   getProduct,
   listProducts,
@@ -13,7 +12,6 @@ const router = Router();
 router.get("/", listProducts);
 router.get("/:id", getProduct);
 router.post("/", adminProtect, createProduct);
-router.post("/bulk", adminProtect, createProductsBulk);
 router.delete("/admin", adminProtect, deleteAllProductsAdmin);
 
 export default router;
