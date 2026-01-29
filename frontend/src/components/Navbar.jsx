@@ -67,6 +67,10 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const searchWrapRef = useRef(null);
 
+  const onLogoClick = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  };
+
   const cartLabel = useMemo(() => (count > 0 ? String(count) : ''), [count]);
 
   const onSubmit = (e) => {
@@ -109,7 +113,11 @@ export default function Navbar() {
           <MenuIcon className="h-6 w-6" />
         </button>
 
-        <Link to="/" className="flex shrink-0 flex-col leading-none text-white no-underline sm:ml-[12%]">
+        <Link
+          to="/"
+          onClick={onLogoClick}
+          className="flex shrink-0 flex-col leading-none text-white no-underline sm:ml-[12%]"
+        >
           <img src={LOGO_URL} alt="" className="h-[20px] w-[75px]" />
           <div className="mt-0.5 hidden items-center gap-1 sm:flex">
             <span className="text-[10px] italic text-white/90">Explore</span>

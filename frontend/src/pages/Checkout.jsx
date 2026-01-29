@@ -27,8 +27,8 @@ export default function Checkout() {
     return lines.reduce((sum, l) => sum + (Number(l.product.mrp || l.product.price || 0) * l.qty), 0);
   }, [lines]);
   const totalDiscount = useMemo(() => Math.max(0, totalMrp - subtotal), [totalMrp, subtotal]);
-  const delivery = subtotal > 499 ? 0 : lines.length > 0 ? 49 : 0;
-  const total = subtotal + delivery;
+  const delivery = 0;
+  const total = subtotal;
   const savings = Math.max(0, totalDiscount - delivery);
 
   const upiVpa = (import.meta.env.VITE_UPI_VPA || '').trim();

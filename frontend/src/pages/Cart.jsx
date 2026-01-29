@@ -196,8 +196,8 @@ export default function Cart() {
     return Math.max(0, totalMrp - subtotal);
   }, [totalMrp, subtotal]);
 
-  const delivery = subtotal > 499 ? 0 : lines.length > 0 ? 49 : 0;
-  const total = subtotal + delivery;
+  const delivery = 0;
+  const total = subtotal;
 
   return (
     <Layout>
