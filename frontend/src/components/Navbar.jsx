@@ -3,9 +3,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useCatalog } from '../context/CatalogContext';
 
-const LOGO_URL = 'https://static-assets-web.flixcart.com/www/linchpin/fk-cp-zion/img/flipkart-plus_8d85f4.png';
-const PLUS_URL = 'https://static-assets-web.flixcart.com/www/linchpin/fk-cp-zion/img/plus_aef861.png';
-
 function MenuIcon({ className = '' }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -118,11 +115,8 @@ export default function Navbar() {
           onClick={onLogoClick}
           className="flex shrink-0 flex-col leading-none text-white no-underline sm:ml-[12%]"
         >
-          <img src={LOGO_URL} alt="" className="h-[20px] w-[75px]" />
-          <div className="mt-0.5 hidden items-center gap-1 sm:flex">
-            <span className="text-[10px] italic text-white/90">Explore</span>
-            <span className="text-[10px] italic text-[#ffe500]">Plus</span>
-            <img src={PLUS_URL} alt="" className="h-[10px] w-[10px]" />
+          <div className="flex h-[32px] w-[32px] items-center justify-center rounded bg-[#ffe500] font-extrabold leading-none text-[#2874f0]">
+            <span className="-mt-[1px] text-[20px]">F</span>
           </div>
         </Link>
 

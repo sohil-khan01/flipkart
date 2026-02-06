@@ -28,7 +28,7 @@ export default function AdminLayout({ title, subtitle, children }) {
       <header className="sticky top-0 z-40 bg-[#2874f0]">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-4">
           <Link to="/" className="text-sm font-extrabold text-white">
-            Flipkart Style • Admin
+            F Style • Admin
           </Link>
           <button
             type="button"

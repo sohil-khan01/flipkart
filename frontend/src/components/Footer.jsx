@@ -9,7 +9,7 @@ export default function Footer() {
 
           <div className="mt-4 space-y-4 text-[11px] leading-5 text-slate-600">
             <div>
-              <div className="font-semibold text-slate-700">MOST SEARCHED FOR ON FLIPKART:</div>
+              <div className="font-semibold text-slate-700">MOST SEARCHED FOR ON F:</div>
               <div className="mt-1">
                 iPhone 16 | iPhone 16 Pro | iPhone 15 | Samsung Galaxy S24 | Vivo V30 | OnePlus 12 | Google Pixel |
                 Noise Smartwatch | Wireless Earphones | Power Bank | Bluetooth Speakers | Laptops | AC | Washing Machine
@@ -65,7 +65,7 @@ export default function Footer() {
           </div>
 
           <div className="mt-8 border-t border-slate-200 pt-6">
-            <div className="text-xs font-semibold text-slate-700">Why Choose Flipkart? The Unbeatable Advantages</div>
+            <div className="text-xs font-semibold text-slate-700">Why Choose F? The Unbeatable Advantages</div>
             <div className="mt-3 space-y-1 text-[11px] leading-5 text-slate-600">
               <div>1. India’s Largest Selection: Millions of products across categories.</div>
               <div>2. Best Prices: Great deals, offers and discounts.</div>
@@ -75,10 +75,10 @@ export default function Footer() {
             </div>
 
             <div className="mt-6 text-xs font-semibold text-slate-700">
-              Flipkart: India’s Ultimate One-Stop Online Shopping Destination
+              F: India’s Ultimate One-Stop Online Shopping Destination
             </div>
             <div className="mt-2 text-[11px] leading-5 text-slate-600">
-              Welcome to Flipkart, a trusted and beloved e-commerce platform serving India’s shopping needs across categories.
+              Welcome to F, a trusted and beloved e-commerce platform serving India’s shopping needs across categories.
               From mobiles and electronics to fashion, home essentials and groceries, discover a wide selection with great deals
               and a smooth shopping experience.
             </div>
@@ -95,7 +95,7 @@ export default function Footer() {
                 <div className="font-semibold">Contact Us</div>
                 <div className="font-semibold">About Us</div>
                 <div className="font-semibold">Careers</div>
-                <div className="font-semibold">Flipkart Stories</div>
+                <div className="font-semibold">F Stories</div>
                 <div className="font-semibold">Press</div>
                 <div className="font-semibold">Corporate Information</div>
               </div>
@@ -136,7 +136,7 @@ export default function Footer() {
             <div className="lg:border-l lg:border-white/10 lg:pl-8">
               <div className="text-[11px] font-bold text-slate-400">Mail Us:</div>
               <div className="mt-3 leading-5 text-slate-200">
-                Flipkart Internet Private Limited,
+                F Internet Private Limited,
                 <br /> Buildings Alyssa, Begonia &
                 <br /> Clove Embassy Tech Village,
                 <br /> Outer Ring Road, Devarabeesanahalli Village,
@@ -155,7 +155,7 @@ export default function Footer() {
             <div>
               <div className="text-[11px] font-bold text-slate-400">Registered Office Address:</div>
               <div className="mt-3 leading-5 text-slate-200">
-                Flipkart Internet Private Limited,
+                F Internet Private Limited,
                 <br /> Buildings Alyssa, Begonia &
                 <br /> Clove Embassy Tech Village,
                 <br /> Outer Ring Road, Devarabeesanahalli Village,
@@ -175,7 +175,7 @@ export default function Footer() {
                 <div className="font-semibold">Gift Cards</div>
                 <div className="font-semibold">Help Center</div>
               </div>
-              <div className="text-slate-300">© 2007-2026 Flipkart.com</div>
+              <div className="text-slate-300">© 2007-2026 F.com</div>
             </div>
           </div>
         </div>

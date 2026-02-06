@@ -1,5 +1,5 @@
 {
-  "name": "Flipkart Style Store",
+  "name": "F Style Store",
   "short_name": "Store",
   "start_url": "/",
   "display": "standalone",
@@ -7,7 +7,7 @@
   "theme_color": "#2874f0",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/flip.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

@@ -32,7 +32,7 @@ export default function Checkout() {
   const savings = Math.max(0, totalDiscount - delivery);
 
   const upiVpa = (import.meta.env.VITE_UPI_VPA || '').trim();
-  const upiPayeeName = (import.meta.env.VITE_UPI_PAYEE_NAME || 'Flipkart').trim();
+  const upiPayeeName = (import.meta.env.VITE_UPI_PAYEE_NAME || 'F').trim();
 
   const [form, setForm] = useState({
     name: '',
@@ -49,17 +49,13 @@ export default function Checkout() {
   const [paymentStage, setPaymentStage] = useState('idle');
   const [secondsLeft, setSecondsLeft] = useState(120);
 
-  const ua = navigator?.userAgent || '';
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
-  const isDesktop = !isIOS && !isAndroid;
   const showQrFlow = true;
 
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
 
   const [qrDataUrl, setQrDataUrl] = useState('');
-  const [qrVisible, setQrVisible] = useState(false);
+  const [qrVisible, setQrVisible] = useState(true);
 
   const storageKey = 'fk_upi_payment_state_v1';
   const checkoutStorageKey = 'fk_checkout_state_v1';
@@ -262,7 +258,7 @@ export default function Checkout() {
         String(savedForm?.name || '').trim() && String(savedForm?.mobile || '').trim() && String(savedForm?.address || '').trim();
       if (step === 'payment' && canGoPayment) {
         setCheckoutStep('payment');
-        setQrVisible(Boolean(parsed?.qrVisible));
+        setQrVisible(parsed?.qrVisible == null ? true : Boolean(parsed?.qrVisible));
       } else {
         setCheckoutStep('address');
         setQrVisible(false);
@@ -309,75 +305,6 @@ export default function Checkout() {
     }, 1000);
     return () => window.clearInterval(id);
   }, [paymentStage]);
-
-  const buildAndroidIntentUrl = ({ ref, packageName }) => {
-    if (!packageName) return '';
-    const vpa = upiVpa;
-    if (!vpa) return '';
-    const params = new URLSearchParams({
-      pa: vpa,
-      pn: upiPayeeName,
-      am: String(Number(total || 0).toFixed(2)),
-      cu: 'INR',
-      tn: `Order ${ref}`,
-      tr: String(ref || ''),
-    });
-
-    return `intent://pay?${params.toString()}#Intent;scheme=upi;package=${packageName};end`;
-  };
-
-  const openUpiApp = (app) => {
-    if (!upiVpa) return;
-    if (!addressComplete) return;
-    const ua = navigator?.userAgent || '';
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-    const isAndroid = /Android/i.test(ua);
-
-    const packageMap = {
-      phonepe: 'com.phonepe.app',
-      paytm: 'net.one97.paytm',
-      gpay: 'com.google.android.apps.nbu.paisa.user',
-    };
-
-    const pkg = packageMap[String(app || '').toLowerCase()] || '';
-    const intentUrl = isAndroid && pkg ? buildAndroidIntentUrl({ ref: upiAttemptRef, packageName: pkg }) : '';
-    const upiUrl = buildUpiUrl({ ref: upiAttemptRef });
-    const targetUrl = (isIOS ? upiUrl : intentUrl || upiUrl);
-
-    if (targetUrl) {
-      startWaiting();
-      window.location.href = targetUrl;
-    }
-  };
-
-  const copyText = async (text) => {
-    const value = String(text || '');
-    if (!value) return false;
-    try {
-      await navigator.clipboard.writeText(value);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const shareUpiLink = async () => {
-    if (!upiVpa) return;
-    const upiUrl = buildUpiUrl({ ref: upiAttemptRef });
-    if (!upiUrl) return;
-    setPaymentInitiated(true);
-
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'Pay via UPI', text: 'Pay via UPI', url: upiUrl });
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    await copyText(upiUrl);
-  };
 
   const placeOrder = async ({ forcePaid } = {}) => {
     if (placing || lines.length === 0) return;
@@ -574,7 +501,7 @@ export default function Checkout() {
                       <div className="mt-4 grid gap-2">
                         <div className="rounded-sm border border-slate-200 px-3 py-3 text-sm">
                           <div className="font-semibold text-slate-900">UPI</div>
-                          <div className="mt-1 text-xs text-slate-600">Choose an app to pay via UPI</div>
+                          <div className="mt-1 text-xs text-slate-600">Scan QR from any UPI app and pay.</div>
 
                           {!upiVpa ? (
                             <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -582,139 +509,10 @@ export default function Checkout() {
                             </div>
                           ) : null}
 
-                          {isAndroid || isIOS ? (
-                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  openUpiApp('phonepe');
-                                }}
-                                disabled={placing || !upiVpa}
-                                className="flex h-11 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                PhonePe
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  openUpiApp('paytm');
-                                }}
-                                disabled={placing || !upiVpa}
-                                className="flex h-11 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Paytm
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  openUpiApp('gpay');
-                                }}
-                                disabled={placing || !upiVpa}
-                                className="flex h-11 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Google Pay
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  openUpiApp('any');
-                                }}
-                                disabled={placing || !upiVpa}
-                                className="flex h-11 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Any UPI App
-                              </button>
-                            </div>
-                          ) : null}
-
-                          {isAndroid || isIOS ? (
-                            <div className="mt-3">
-                              {paymentStage === 'waiting' ? (
-                                <div className="rounded border border-slate-200 bg-slate-50 px-3 py-3">
-                                  <div className="text-xs font-bold text-slate-700">Waiting for payment... ({formatTimer(secondsLeft)})</div>
-                                </div>
-                              ) : null}
-
-                              {paymentStage === 'ask' ? (
-                                <div className="rounded border border-slate-200 bg-white px-3 py-3">
-                                  <div className="text-xs font-bold text-slate-900">Did you complete the payment?</div>
-                                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                                    <button
-                                      type="button"
-                                      onClick={async (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setPaymentStage('paid');
-                                        await placeOrder({ forcePaid: true });
-                                      }}
-                                      disabled={placing}
-                                      className="flex h-10 items-center justify-center rounded-sm bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                      YES, I PAID
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setPaymentStage('not_paid');
-                                      }}
-                                      disabled={placing}
-                                      className="flex h-10 items-center justify-center rounded-sm border border-slate-200 bg-white text-xs font-bold text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                      NO
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : null}
-
-                              {paymentStage === 'not_paid' ? (
-                                <div className="rounded border border-red-200 bg-red-50 px-3 py-3">
-                                  <div className="text-xs font-bold text-red-700">Payment not completed</div>
-                                  <div className="mt-1 text-xs text-red-700">Please try again</div>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      resetPayment();
-                                    }}
-                                    disabled={placing}
-                                    className="mt-2 flex h-9 w-full items-center justify-center rounded-sm border border-red-200 bg-white text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    Try again
-                                  </button>
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : null}
-
                           {showQrFlow ? (
                             <div className="mt-3 rounded border border-slate-200 bg-white p-3">
                               <div className="text-xs font-bold text-slate-600">Scan & Pay</div>
                               <div className="mt-1 text-xs text-slate-600">Scan this QR from any UPI app and pay.</div>
-
-                              {!qrVisible ? (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setQrVisible(true);
-                                  }}
-                                  className="mt-3 flex h-10 w-full items-center justify-center rounded-sm border border-slate-200 bg-white text-xs font-bold text-slate-900 hover:bg-slate-50"
-                                >
-                                  Show QR
-                                </button>
-                              ) : null}
 
                               {qrVisible && qrDataUrl ? (
                                 <div className="mt-3 flex justify-center">
