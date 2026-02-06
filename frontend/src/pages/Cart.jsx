@@ -138,7 +138,7 @@ function PriceDetails({ lines, subtotal, total, delivery, totalMrp, totalDiscoun
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>Price ({lines.length} item)</div>
-            <div>{formatINR(totalMrp || subtotal)}</div>
+            <div>{formatINR(subtotal)}</div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -189,7 +189,13 @@ export default function Cart() {
   }, [lines]);
 
   const totalMrp = useMemo(() => {
-    return lines.reduce((sum, l) => sum + (Number(l.product.mrp || l.product.price || 0) * l.qty), 0);
+    return lines.reduce((sum, l) => {
+      const mrp = Number(l.product.mrp || 0);
+      const price = Number(l.product.price || 0);
+      // Use MRP if it's greater than selling price, else use selling price
+      const basePrice = mrp > price ? mrp : price;
+      return sum + basePrice * l.qty;
+    }, 0);
   }, [lines]);
 
   const totalDiscount = useMemo(() => {
